@@ -7,8 +7,8 @@ def email(to_email, title, t, html, css):
     # 配置郵件信息
     smtp_server = 'smtp.gmail.com'
     port = 587
-    sender_email = 'smart96071031@gmail.com'
-    password = 'ftah zivh udvv dsjd'
+    sender_email = '你的信箱'
+    password = '密碼'
     receiver_email = to_email  # 使用參數中的收件人電子郵件
     name = "長興食堂"
 
