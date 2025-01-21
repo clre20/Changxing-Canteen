@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: white; /* Keep the background of the page white */
+}
+
+.container {
+    text-align: center;
+    background: white;
+    padding: 20pt 40pt;
+    border-radius: 10pt;
+    border: 4px solid #8b4513; /* Dark border to make the box stand out */
+    box-shadow: 0pt 4pt 6pt rgba(0, 0, 0, 0.1);
+    width: 280pt;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+h1 {
+    margin-bottom: 20pt;
+    font-size: 18pt;
+    color: #8b4513; /* Deep khaki color for the title */
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 15pt;
+        width: 85%; /* Adjust width for mobile */
+    }
+
+    h1 {
+        font-size: 14pt;
+    }
+}

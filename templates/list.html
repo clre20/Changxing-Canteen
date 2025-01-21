@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐點列表</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        .container {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #4CAF50;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-button.rotate {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            overflow: hidden;
+            height: 0;
+            transition: height 0.5s ease, padding 0.5s ease;
+            padding: 0;
+        }
+
+        .collapsible-content.expanded {
+            height: auto;
+            padding: 10px 0;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .meal-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* 置中排列 */
+        }
+
+        .meal-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            width: 300px;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0; /* 防止卡片縮小 */
+        }
+
+        .meal-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .meal-card .content {
+            padding: 15px;
+        }
+
+        .meal-card .content p {
+            margin: 10px 0;
+            color: #666;
+        }
+
+        .button {
+            background-color: white;
+            color: #4CAF50;
+            text-align: center;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 150px;
+            height: 150px;
+            font-size: 18px;
+            box-sizing: border-box;
+            transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
+            margin: 20px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .buttons button {
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #4CAF50;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-delete {
+            background-color: red;
+        }
+
+        .btn-ok {
+            background-color: blue;
+        }
+
+        @media screen and (max-width: 768px) {
+            .button {
+                width: calc(100% - 20px);
+                height: 100px;
+                font-size: 16px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <h1>餐點列表</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="error-message">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <div class="container">
+        <div class="header">
+            <h2>希望餐點</h2>
+            <button type="button" class="toggle-button">+</button>
+        </div>
+        <div class="collapsible-content">
+            <div class="meal-container">
+                {% for key, meal in meals_list.items() %}
+                    {% for item_key, item_value in meal.items() %}
+                        {% if 'image' in item_key %}
+                        <div class="meal-card" id="card-{{ key }}-{{ item_key }}">
+                            <img src="{{ item_value }}" alt="Image">
+                            {% set content_key = item_key.replace('image', 'content') %}
+                            <div class="content">
+                                <p>{{ meal[content_key] }}</p>
+                            </div>
+                            <div class="buttons">
+                                {% if tag == 'chef' %}
+                                    <button class="btn-ok" onclick="okItem('{{ key }}', '{{ item_key }}')">✓</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>大廚嚴選</h2>
+            <button type="button" class="toggle-button">+</button>
+        </div>
+        <div class="collapsible-content">
+            <div class="meal-container">
+                {% for key, meal in list_ok.items() %}
+                    {% for item_key, item_value in meal.items() %}
+                        {% if 'image' in item_key %}
+                        <div class="meal-card" id="ok-card-{{ key }}-{{ item_key }}">
+                            <img src="{{ item_value }}" alt="Image">
+                            {% set content_key = item_key.replace('image', 'content') %}
+                            <div class="content">
+                                <p>{{ meal[content_key] }}</p>
+                            </div>
+                            <div class="buttons">
+                                {% if tag == 'chef' %}
+                                    <button class="btn-delete" onclick="removeOkItem('{{ key }}', '{{ item_key }}')">✘</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="buttons-container">
+        {% if tag == 'chef' %}
+        <p>按下確認後會刪除希望餐點!!</p>
+        <a href="{{ url_for('confirm', email=email) }}" class="button btn-confirm">確認</a>
+        {% endif %}
+        <a href="{{ url_for('user_panel', email=email) }}" class="button back-button">返回控制面板</a>
+    </div>    
+    <script>
+        // 控制收合功能
+        document.querySelectorAll('.header').forEach(header => {
+            const button = header.querySelector('.toggle-button');
+            const content = header.nextElementSibling;
+    
+            // 檢查 localStorage 中的狀態
+            const headerId = header.querySelector('h2').innerText; // 獲取標題作為識別
+            const isExpanded = localStorage.getItem(headerId) === 'true';
+    
+            // 根據狀態設置展開或收起
+            if (isExpanded) {
+                content.classList.add('expanded');
+                content.style.height = content.scrollHeight + 'px';
+                button.textContent = '-';
+                button.classList.add('rotate');
+            }
+    
+            header.addEventListener('click', () => {
+                const isCurrentlyExpanded = content.classList.toggle('expanded');
+    
+                // 更新 localStorage 中的狀態
+                localStorage.setItem(headerId, isCurrentlyExpanded);
+    
+                if (isCurrentlyExpanded) {
+                    content.style.height = '0';
+                    void content.offsetHeight; // 觸發重繪
+                    content.style.height = content.scrollHeight + 'px';
+                    button.textContent = '-';
+                    button.classList.add('rotate');
+                } else {
+                    content.style.height = '0';
+                    button.textContent = '+';
+                    button.classList.remove('rotate');
+                }
+            });
+        });
+    
+        function deleteItem(key, itemKey) {
+            const card = document.getElementById(`card-${key}-${itemKey}`);
+            card.remove();
+            fetch(`/delete_item/${key}/${itemKey}`, {
+                method: 'DELETE',
+            }).then(() => {
+                location.reload(); // 刪除後刷新頁面
+            });
+        }
+    
+        function okItem(key, itemKey) {
+            const card = document.getElementById(`card-${key}-${itemKey}`);
+            card.remove();
+            fetch(`/ok_item/${key}/${itemKey}`, {
+                method: 'POST',
+            }).then(() => {
+                location.reload(); // 確認後刷新頁面
+            });
+        }
+    
+        function removeOkItem(key, itemKey) {
+            const card = document.getElementById(`ok-card-${key}-${itemKey}`);
+            card.remove();
+            fetch(`/remove_ok_item/${key}/${itemKey}`, {
+                method: 'DELETE',
+            }).then(() => {
+                location.reload(); // 移除已選項目後刷新頁面
+            });
+        }
+    </script>      
+</body>
+</html>
