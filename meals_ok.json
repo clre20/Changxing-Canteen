@@ -1,0 +1,75 @@
+{
+    "20250317": {
+        "selections": {
+            "3": {
+                "title": "湯品",
+                "selections": [
+                    {
+                        "content": "青菜豆腐湯",
+                        "image": "static/images/湯品/青菜豆腐湯.jpg"
+                    }
+                ]
+            },
+            "1": {
+                "title": "主菜",
+                "selections": [
+                    {
+                        "content": "冰花煎餃",
+                        "image": "static/images/主菜/冰花煎餃.jpg"
+                    },
+                    {
+                        "content": "豆腐鑲肉",
+                        "image": "static/images/主菜/豆腐鑲肉.jpg"
+                    }
+                ]
+            }
+        }
+    },
+    "20250318": {
+        "selections": {
+            "2": {
+                "title": "配菜",
+                "selections": [
+                    {
+                        "content": "九層塔炒海龍",
+                        "image": "static/images/配菜/九層塔炒海龍.jpg"
+                    },
+                    {
+                        "content": "九層塔炒蛋",
+                        "image": "static/images/配菜/九層塔炒蛋.jpg"
+                    },
+                    {
+                        "content": "九層塔炒蛤蜊",
+                        "image": "static/images/配菜/九層塔炒蛤蜊.jpg"
+                    }
+                ]
+            },
+            "3": {
+                "title": "湯品",
+                "selections": [
+                    {
+                        "content": "青菜豆腐湯",
+                        "image": "static/images/湯品/青菜豆腐湯.jpg"
+                    },
+                    {
+                        "content": "南瓜海鮮盅",
+                        "image": "static/images/湯品/南瓜海鮮盅.jpg"
+                    }
+                ]
+            }
+        }
+    },
+    "20250324": {
+        "selections": {
+            "1": {
+                "title": "主菜",
+                "selections": [
+                    {
+                        "content": "水餃",
+                        "image": "static/images/主菜/水餃.jpg"
+                    }
+                ]
+            }
+        }
+    }
+}

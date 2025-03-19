@@ -1,3 +1,22 @@
 {
-    //user
+    "smart960710@gmail.com": {
+        "email": "smart960710@gmail.com",
+        "password": "123",
+        "tag": "user"
+    },
+    "Peter940510@gmail.com": {
+        "email": "Peter940510@gmail.com",
+        "password": ".",
+        "tag": "user"
+    },
+    "anita8229801@gmail.com": {
+        "email": "anita8229801@gmail.com",
+        "password": "520",
+        "tag": "user"
+    },
+    "ye620517@gmail.com": {
+        "email": "ye620517@gmail.com",
+        "password": "yetsd620517",
+        "tag": "chef"
+    }
 }
