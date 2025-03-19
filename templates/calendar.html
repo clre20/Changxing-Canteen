@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>週曆展示</title>
+    <style>
+        /* 重設與背景 */
+        html, body {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          background: transparent;
+        }
+        /* 背景 canvas */
+        #bg-canvas {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          background: #0d0d0d;
+        }
+        /* 主容器 */
+        .container {
+          width: 100%;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          box-sizing: border-box;
+          color: #fff;
+          font-family: Arial, sans-serif;
+        }
+        /* 導航按鈕 */
+        .nav-buttons {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .nav-buttons a {
+          display: inline-block;
+          margin: 0 10px;
+          padding: 12px 24px;
+          background: linear-gradient(145deg, #3a86ff, #1d5ebb);
+          color: #fff;
+          text-decoration: none;
+          font-size: 18px;
+          font-weight: bold;
+          border-radius: 12px;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .nav-buttons a:hover {
+          transform: scale(1.03);
+          box-shadow: 0 8px 14px rgba(0, 0, 0, 0.25);
+        }
+        /* 日期與日曆區塊 */
+        .date-label {
+          text-align: center;
+          font-size: 16px;
+          margin: 10px 0 5px;
+        }
+        .day-container {
+          border: 1px solid #555;
+          margin: 10px 0;
+          border-radius: 8px;
+          cursor: pointer;
+          overflow: hidden;
+        }
+        .day-header {
+          background: #1d5ebb;
+          padding: 10px;
+          font-size: 18px;
+          color: #fff;
+        }
+        .day-content {
+          display: none;
+          padding: 10px;
+          background: #2a2a2a;
+        }
+        .day-content p {
+          margin: 10px 0;
+        }
+        .day-content img {
+          display: block;
+          margin: 10px auto;
+          width: 90%;
+          max-width: 400px;
+          height: auto;
+        }
+        .plus-button {
+          display: block;
+          margin: 10px auto;
+          font-size: 24px;
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(145deg, #3a86ff, #1d5ebb);
+          color: #fff;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .plus-button:hover {
+          transform: scale(1.03);
+          box-shadow: 0 8px 14px rgba(0, 0, 0, 0.25);
+        }
+        .selected-meals {
+          margin-top: 15px;
+          padding: 15px;
+          border-top: 1px solid #555;
+          background: #2a2a2a;
+          border-radius: 8px;
+        }
+        .selected-meals h3 {
+          font-size: 20px;
+          margin-bottom: 15px;
+        }
+        .meal-group {
+          background: #333;
+          padding: 10px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+        }
+        .meal-group h4 {
+          color: #3a86ff;
+          margin-bottom: 10px;
+        }
+        .meal-item {
+          display: flex;
+          align-items: center;
+          background: #333;
+          padding: 5px;
+          border-radius: 5px;
+          margin: 10px 0;
+        }
+        .meal-item img {
+          width: 100px;
+          height: auto;
+          margin-right: 10px;
+          border-radius: 4px;
+        }
+        .meal-item span {
+          font-size: 16px;
+          font-weight: bold;
+          color: #fff;
+        }
+        /* Modal 視窗 */
+        .modal {
+          display: none; 
+          position: fixed; 
+          z-index: 100; 
+          left: 0;
+          top: 0; 
+          width: 100%; 
+          height: 100%; 
+          overflow: auto; 
+          background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+          background-color: #1d1d1d;
+          margin: 10% auto;
+          padding: 20px;
+          border: 1px solid #444;
+          width: 80%;
+          max-width: 600px;
+          color: #fff;
+          border-radius: 8px;
+        }
+        .close {
+          color: #aaa;
+          float: right;
+          font-size: 28px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+        .close:hover, .close:focus {
+          color: #fff;
+          text-decoration: none;
+        }
+        details {
+          margin-bottom: 10px;
+          background: #2a2a2a;
+          border-radius: 8px;
+          padding: 10px;
+        }
+        details summary {
+          font-size: 18px;
+          cursor: pointer;
+          outline: none;
+        }
+        .meal-item {
+          margin: 5px 0;
+          display: flex;
+          align-items: center;
+        }
+        .meal-item img {
+          width: 100px; 
+          height: auto; 
+          margin-right: 10px;
+          border-radius: 4px;
+        }
+        /* Ripple 動畫效果 */
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple-effect 0.6s linear;
+          background: rgba(255, 255, 255, 0.7);
+        }
+        @keyframes ripple-effect {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="container">
+        <div class="nav-buttons">
+            <a href="{{ url_for('weekly.list', offset=offset-1) }}">上一周</a>
+            <a href="{{ url_for('weekly.list', offset=offset+1) }}">下一周</a>
+        </div>
+        <div class="week-container">
+            {% for day in days %}
+            <div class="date-label">{{ day.date }}</div>
+            <div class="day-container" onclick="toggleDayContent({{ loop.index }})">
+                <div class="day-header">{{ day.weekday }}</div>
+                <div class="day-content" id="content-{{ loop.index }}">
+                    <button class="plus-button" onclick="event.stopPropagation(); openModal('{{ day.date_full }}');">+</button>
+                    {% if day.date_full in meals_ok %}
+                    <div class="selected-meals">
+                        <h3>已選餐點</h3>
+                        {% for group_key, group in meals_ok[day.date_full]["selections"].items() %}
+                        <div class="meal-group">
+                            <h4>{{ group.title }}</h4>
+                            {% for item in group.selections %}
+                            <div class="meal-item">
+                                <img src="{{ item.image }}" alt="{{ item.content }}">
+                                <span>{{ item.content }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Modal 視窗 -->
+    <div id="mealModal" class="modal" onclick="closeModal()">
+      <div class="modal-content" onclick="stopPropagation(event)">
+        <span class="close" onclick="closeModal()">×</span>
+        <h2>餐點選單</h2>
+        <form id="mealForm" method="POST" action="/save_meals">
+            <input type="hidden" id="selectedDate" name="selectedDate" value="">
+            {% for group_key, group in meals.items() %}
+            <details>
+              <summary>{{ group.title }}</summary>
+              <div>
+                {% for i in range(1, 51) %}
+                  {% set content_key = "content" ~ i %}
+                  {% set image_key = "image" ~ i %}
+                  {% if group[content_key] is defined and group[image_key] is defined %}
+                  <div class="meal-item">
+                    <input type="checkbox" name="selected" value="{{ group_key }}|{{ i }}">
+                    <img src="{{ group[image_key] }}" alt="{{ group[content_key] }}">
+                    <span>{{ group[content_key] }}</span>
+                  </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </details>
+            {% endfor %}
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" style="padding: 12px 24px; background: linear-gradient(145deg, #3a86ff, #1d5ebb); color: #fff; font-size: 18px; border: none; border-radius: 12px; cursor: pointer; position: relative; overflow: hidden;">確認</button>
+            </div>
+        </form>
+      </div>
+    </div>
+    <script>
+        function toggleDayContent(id) {
+            var content = document.getElementById('content-' + id);
+            content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'block' : 'none';
+        }
+        function openModal(date) {
+            document.getElementById("mealModal").style.display = "block";
+            document.getElementById("selectedDate").value = date;
+        }
+        function closeModal() {
+            document.getElementById("mealModal").style.display = "none";
+        }
+        window.onclick = function(event) {
+            var modal = document.getElementById("mealModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        function stopPropagation(event) {
+            event.stopPropagation();
+        }
+        // 粒子背景動畫
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        class Particle {
+          constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.radius = Math.random() * 3 + 1;
+            this.speedX = Math.random() * 1 - 0.5;
+            this.speedY = Math.random() * 1 - 0.5;
+          }
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x < 0 || this.x > canvas.width) this.speedX = -this.speedX;
+            if (this.y < 0 || this.y > canvas.height) this.speedY = -this.speedY;
+          }
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fill();
+          }
+        }
+        let particles = [];
+        function initParticles() {
+          particles = [];
+          const numParticles = Math.floor((canvas.width * canvas.height) / 8000);
+          for (let i = 0; i < numParticles; i++) {
+            particles.push(new Particle());
+          }
+        }
+        initParticles();
+        window.addEventListener('resize', initParticles);
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          particles.forEach(particle => {
+            particle.update();
+            particle.draw();
+          });
+          requestAnimationFrame(animate);
+        }
+        animate();
+        // Ripple 動畫效果
+        document.querySelectorAll('.nav-buttons a, .plus-button, button[type="submit"]').forEach(button => {
+          button.addEventListener('click', function(e) {
+            const rect = button.getBoundingClientRect();
+            const circle = document.createElement('span');
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${e.clientX - rect.left - radius}px`;
+            circle.style.top = `${e.clientY - rect.top - radius}px`;
+            circle.classList.add('ripple');
+            const ripple = button.querySelector('.ripple');
+            if (ripple) { ripple.remove(); }
+            button.appendChild(circle);
+          });
+        });
+    </script>
+</body>
+</html>

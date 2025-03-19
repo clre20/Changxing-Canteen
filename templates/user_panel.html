@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>0-{{ email }}</title>
+  <style>
+    /* 重設 html 與 body 樣式，禁止捲動並設定全螢幕 */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent;
+    }
+    /* 使用 Flex 讓內容置中 */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      position: relative;
+      z-index: 1;
+    }
+    /* 背景 canvas */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: #0d0d0d;
+    }
+    /* 主要容器 */
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    h1 {
+      color: #3a86ff;
+      margin-top: 20px;
+    }
+    p {
+      color: #ffffff;
+      font-size: 18px;
+    }
+    /* 大顆按鈕設計：垂直排列、較大尺寸、圓角、漸層背景 */
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .button-group a {
+      position: relative;
+      display: inline-block;
+      width: 80%;
+      max-width: 400px;
+      padding: 20px;
+      background: linear-gradient(145deg, #3a86ff, #1d5ebb);
+      color: #fff;
+      text-decoration: none;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .button-group a:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 14px rgba(0, 0, 0, 0.25);
+    }
+    /* Ripple 動畫效果 */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple-effect 0.6s linear;
+      background: rgba(255, 255, 255, 0.7);
+    }
+    @keyframes ripple-effect {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    /* 錯誤訊息 */
+    .error-message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff4d6d;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(255, 77, 109, 0.3);
+      text-align: center;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景 canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="container">
+    <h1>歡迎回來</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="error-message">
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <!-- 大顆按鈕區域 -->
+    <div class="button-group">
+      <a href="{{ url_for('loginout.info', email=email) }}">資訊</a>
+      <a href="{{ url_for('loginout.account_number', email=email) }}">帳號</a>
+      <a href="{{ url_for('weekly.list', email=email) }}">進入</a>
+    </div>
+  </div>
+
+  <!-- 動態背景粒子效果腳本 -->
+  <script>
+    // 粒子背景動畫
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width) this.speedX = -this.speedX;
+        if (this.y < 0 || this.y > canvas.height) this.speedY = -this.speedY;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fill();
+      }
+    }
+
+    let particles = [];
+    function initParticles() {
+      particles = [];
+      const numParticles = Math.floor((canvas.width * canvas.height) / 8000);
+      for (let i = 0; i < numParticles; i++) {
+        particles.push(new Particle());
+      }
+    }
+    initParticles();
+    window.addEventListener('resize', initParticles);
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // 按鈕點擊 Ripple 互動效果
+    document.querySelectorAll('.button-group a').forEach(button => {
+      button.addEventListener('click', function(e) {
+        const rect = button.getBoundingClientRect();
+        const circle = document.createElement('span');
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${e.clientX - rect.left - radius}px`;
+        circle.style.top = `${e.clientY - rect.top - radius}px`;
+        circle.classList.add('ripple');
+        // 移除先前的 ripple 效果
+        const ripple = button.querySelector('.ripple');
+        if (ripple) {
+          ripple.remove();
+        }
+        button.appendChild(circle);
+      });
+    });
+  </script>
+</body>
+</html>
